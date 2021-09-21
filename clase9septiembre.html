@@ -1,0 +1,182 @@
+<html>
+
+
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+
+  <script src="three.min.js"></script>
+  <script src="TrackballControls.js"></script>
+  <script src="OBJLoader.js"></script>
+  <script src="Detector.js"></script>
+
+  <script>
+
+    var container, stats;
+    var object;
+    var camera, scene, renderer;
+    var mouseX = 0, mouseY = 0;
+    var windowHalfX = window.innerWidth / 2;
+    var windowHalfY = window.innerHeight / 2;
+
+    init();
+    animate();
+
+
+
+    function init() {
+
+      container = document.createElement('div');
+      document.body.appendChild(container);
+
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+      camera.position.z = 100;
+
+      controls = new THREE.TrackballControls(camera);
+      controls.rotateSpeed = 5.0;
+      controls.zoomSpeed = 5;
+      controls.panSpeed = 2;
+      controls.noZoom = false;
+      controls.noPan = false;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+
+      // escena
+
+      scene = new THREE.Scene();
+
+      // luz ambiente
+
+      // var ambient = new THREE.AmbientLight( 0x101030 );
+      var ambient = new THREE.AmbientLight(0xffffff);
+      scene.add(ambient);
+
+      // var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+      // directionalLight.position.set( 0, 0, 1 ).normalize();
+      // scene.add( directionalLight );
+
+      // Carga textura
+
+      var texture = new THREE.Texture();
+
+      var loader = new THREE.ImageLoader();
+      loader.addEventListener('load', function (event) {
+
+        texture.image = event.content;
+        texture.needsUpdate = true;
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestMipMapLinearFilter;
+
+      });
+      loader.load('corazon1.jpg');
+
+      // Carga modelo
+
+      var loader = new THREE.OBJLoader();
+      loader.addEventListener('load', function (event) {
+
+        object = event.content;
+        object.traverse(function (child) {
+          if (child instanceof THREE.Mesh) {
+            child.material.map = texture;
+          }
+
+        });
+
+        object.scale = new THREE.Vector3(0.5, 0.5, 0.5);
+        object.rotation.x = 11;
+        scene.add(object);
+
+      });
+      loader.load('corazon.obj');
+
+      // Renderiza con webGL
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      document.addEventListener('mousemove', onDocumentMouseMove, false);
+      window.addEventListener('resize', onWindowResize, false);
+
+    }
+
+    function onWindowResize() {
+
+      windowHalfX = window.innerWidth / 2;
+      windowHalfY = window.innerHeight / 2;
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+    }
+
+    function onDocumentMouseMove(event) {
+
+      mouseX = (event.clientX - windowHalfX) / 2;
+      mouseY = (event.clientY - windowHalfY) / 2;
+
+    }
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+      render();
+      //console.log(object.rotation.x);
+
+    }
+
+
+    document.addEventListener("keydown", setupKeyControls, false);
+    function setupKeyControls() {
+      var cora = object;
+      document.onkeydown = function (e) {
+        switch (e.keyCode) {
+          case 37://izquierda
+            cora.rotation.x -= 0.2;
+            break;
+          case 38://arriba
+            cora.rotation.y += 0.2;
+            break;
+          case 39://derecha
+            cora.rotation.x += 0.2;
+            break;
+          case 40://abajo
+            cora.rotation.y -= 0.2;
+            break;
+
+        }
+      }
+    }
+
+
+
+
+
+
+
+    function render() {
+
+      controls.update();
+      camera.lookAt(scene.position);
+      renderer.render(scene, camera);
+
+    }
+
+
+
+  </script>
+  <div>
+    <canvas width="800" height="800" style="width: 800px; height: 800px;"></canvas>
+  </div>
+  <p style="font-size: 10px; font-style:italic; width: 400px; display:block; text-align:center; color:#FFF">Modelo 3D
+    realizado por técnicas de SfM y publicado con tecnología webGL</p>
+
+</body>
+
+</html>
